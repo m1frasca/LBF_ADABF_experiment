@@ -33,7 +33,7 @@ if __name__ == "__main__":
     for i,cl in enumerate(classifier_list):
         classifier_score_path = serialize.get_path(path_score,serialize.get_data_name(data_path),cl).with_suffix(".csv") 
         classifier_model_path = serialize.get_path(path_classifier, serialize.get_data_name(data_path), cl).with_suffix(".pk1") 
-        classifier_size = os.path.getsize(classifier_model_path) * 8 # getsize restituisce dimensione in byte
+        classifier_size = os.path.getsize(classifier_model_path)# getsize restituisce dimensione in byte
         correct_size_filter = size_filter - classifier_size
         if correct_size_filter < 0:
             print(f"size of classifier {cl} is greater than budget")
@@ -45,5 +45,6 @@ if __name__ == "__main__":
     else : 
         results = DataFrame(structure_dict)
         print(results)
+        results.to_csv('results.csv', mode='a')    
         serialize.save_results(results,type_filter)
 
