@@ -43,19 +43,20 @@ def train_lbf(filter_size, query_train_set, keys, quantile_order):
 
     fp_opt = query_train_set.shape[0]
     lbf_opt = LBF(keys, filter_size, 1.0) # caso base
-
+    best_th = 1.0
     for threshold in thresholds_list:
         lbf = LBF(keys, filter_size, threshold)
         fp_items = lbf.query(query_train_set)
         print(f"Current threshold: {threshold}, False positive items: {fp_items}")
         # Se con la soglia provata miglioro il numero di falsi positivi aggiorno la soglia corrente
         if fp_items < fp_opt:
+            best_th = threshold
             fp_opt = fp_items
             lbf_opt = lbf
     
     print(f"Chosen thresholds: {lbf_opt.threshold}")
 
-    return lbf_opt, fp_opt
+    return lbf_opt, fp_opt, best_th
 
 def main(data_path, size_filter, others):
     parser = argparse.ArgumentParser()
@@ -73,8 +74,12 @@ def main(data_path, size_filter, others):
     train_negative = data.loc[(data['label'] == 0)]
     positive_sample = data.loc[(data['label'] == 1)]
     
+    
+    
     '''Stage 1: Find the hyper-parameters (spare 30% samples to find the parameters)'''
-    lbf_opt, _ = train_lbf(R_sum, train_negative, positive_sample, thresholds_q)
+    lbf_opt, _, best_th = train_lbf(R_sum, train_negative, positive_sample, thresholds_q)
+    clFN = len(positive_sample[(positive_sample.iloc[:, -1] <= best_th)])/len(positive_sample)
+    clFP = len(train_negative[(train_negative.iloc[:, -1] > best_th)])/len(train_negative)
     
     return lbf_opt
 
